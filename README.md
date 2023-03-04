@@ -13,11 +13,11 @@ The CSV time-series dataset is in **30-min resolution**, spans from **2012-01-01
 
 The MVP should contain following steps:
 
-- [ ] load data
-- [ ] data processing/feature extraction
-- [ ] train [any] model to predict 24 h energy demand
-- [ ] evaluate model performance
-- [ ] expose model via REST API
+- [x] load data
+- [x] data processing/feature extraction
+- [x] train model to predict 24 h energy demand
+- [x] evaluate model performance
+- [x] expose model via REST API
 
 Later steps:
 - [ ] data versioning
@@ -28,9 +28,30 @@ Later steps:
 - [ ] hyperparameter tuning
 - [ ] model versioning
 
+## Setup Environment
+We use conda to manage the projects' environment.
+Before getting started install and setup conda. 
+
+Execute following command to create the development environment:
+
+```$ conda env create -f environment.yml```
+
+Next activate the created environment:
+
+```$ conda activate demand-prediction```
+
 ## Model training and evaluation
-TODO
 
-## start REST server and API usage
-TODO
+After setting up and activating the conda environment we can train and evaluate the model.
+Run ``$ python python main_cli.py run_exp`` inside th project root to do so.
 
+With the default setting the model performs good (r2>0.8) but clearly overfits.
+In future iterations hyperparameters need to be optimized.
+
+## Start REST server and API usage
+
+The REST server can be started as easy as training is done.
+
+``$ python main_cli.py start_rest --model_path=<path to model>``
+
+**NOTE**: server is stil at development stage and has not been tested yet. 
