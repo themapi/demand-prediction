@@ -18,11 +18,11 @@ if __name__ == '__main__':
     server_parser.add_argument('--model_path', type=str, required=True)
 
     args = parser.parse_args()
-    print(args)
 
     if args.action == 'run_exp':
-        experiment = Experiment(cv_spilits=args.cv_splits, n_lag_days=args.n_lag_days)
-        experiment.run()
+        model_hparams = {'n_jobs': -1}
+        experiment = Experiment(cv_spilits=args.cv_splits, n_lag_days=args.n_lag_days, model_hparams=model_hparams)
+        experiment.exec_run()
 
     elif args.action == 'start_rest':
         rest_server.model_path = args.model_path

@@ -4,20 +4,22 @@ import pandas as pd
 from sklearn import metrics
 from sklearn.model_selection import TimeSeriesSplit
 
-from mvp.regression_model import RandomForestForecastModel
 from mvp.data_processing import load_training_data
-import logging
+from mvp.regression_model import RandomForestForecastModel
 
 EXPERIMENTS_PATH = 'experiments'
 
 
 class Experiment:
 
-    def __init__(self, experiments_path=EXPERIMENTS_PATH, cv_spilits=3, n_lag_days=2, **model_hparams):
+    def __init__(self, experiments_path=EXPERIMENTS_PATH, cv_spilits=3, n_lag_days=2, model_hparams=None):
         self.cv_spilits = cv_spilits
         self.n_lag_days = n_lag_days
 
         self.experiments_path = experiments_path
+
+        if model_hparams is None:
+            model_hparams = dict()
         self.model = RandomForestForecastModel(**model_hparams)
 
         # create experiments path is not existing.
@@ -26,6 +28,7 @@ class Experiment:
         self.run = self._determine_run()
 
         self.current_run_path = os.path.join(self.experiments_path, f'run_{self.run:03d}')
+        os.makedirs(self.current_run_path)
 
     def _determine_run(self):
         experiments = os.listdir(self.experiments_path)
@@ -35,10 +38,18 @@ class Experiment:
         versions = list(map(lambda e: int(e.split('_')[-1]), experiments))
         return max(versions) + 1
 
-    def exec_run(self):
-        logging.info(f'Training and saving model version {self.run}.')
+    def exec(self):
+        # TODO replace console logs with proper logging
+
+        print(f'Starting run {self.run}.', self.current_run_path)
+
+        print('Train and save model')
         self.train()
-        self.evaluate()
+
+        print('Evaluate model')
+        eval_res = self.evaluate()
+        print('evaluation result')
+        print(eval_res)
 
     def train(self):
         """
@@ -49,7 +60,9 @@ class Experiment:
         """
         x, y = load_training_data(self.n_lag_days)
         self.model.train(x, y)
-        self.model.save(os.path.join(self.current_run_path, f'model.joblib'))
+        model_path = os.path.join(self.current_run_path, f'model.joblib')
+        self.model.save(model_path)
+        print('saved model here:', model_path)
 
     def evaluate(self) -> pd.DataFrame:
         """
@@ -68,8 +81,8 @@ class Experiment:
         fold_list = list()
 
         for fold, (train_idx, val_idx) in enumerate(tscv.split(x, y)):
-            y_train = x.iloc[train_idx]
-            x_train = y.iloc[train_idx]
+            x_train = x.iloc[train_idx]
+            y_train = y.iloc[train_idx]
 
             x_val = x.iloc[val_idx]
             y_val = y.iloc[val_idx]
