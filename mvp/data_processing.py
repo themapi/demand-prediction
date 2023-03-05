@@ -46,22 +46,22 @@ def extract_training_data_from(data: pd.DataFrame, n_lag_days: int) -> Tuple[pd.
         Tuple: Training data tuple: `(features, target)`.
     """
     # holiday flags of the upcoming 24 hours
-    holiday_future = _shift_vars(data, 'Holiday', np.arange(1, 25) * -1, 'Target-Holiday')
+    holiday_target = _shift_vars(data, 'Holiday', np.arange(1, 25) * -1, 'Target-Holiday')
 
     # past `n_lag_days` of Demand, Temperature and Holiday
     demand_lagged = _shift_vars(data, 'Demand', np.arange(24 * n_lag_days))
     temperature_lagged = _shift_vars(data, 'Temperature', np.arange(24 * n_lag_days))
     holiday_lagged = _shift_vars(data, 'Holiday', np.arange(24 * n_lag_days))
 
-    data['DST'] = _extract_dst(data)
+    # data['DST'] = _extract_dst(data)
     data['Weekday'] = data['Date'].dt.weekday
     data['Weekend'] = data['Weekday'].isin([6, 7])
     data['DayOfYear'] = data['Date'].dt.dayofyear
-    data['TomorrowIsWeekend'] = data['Weekday'].isin([5, 6])
+    # data['TomorrowIsWeekend'] = data['Weekday'].isin([5, 6])
     data['Hour_UTC'] = data.index.hour
 
     normal_feats = data[['Weekday', 'Weekend', 'Hour_UTC', 'DayOfYear']]
-    features = pd.concat([normal_feats, holiday_future, demand_lagged, temperature_lagged, holiday_lagged], axis=1)
+    features = pd.concat([normal_feats, holiday_target, demand_lagged, temperature_lagged, holiday_lagged], axis=1)
 
     target = _shift_vars(data, 'Demand', np.arange(1, 25) * -1)
 
